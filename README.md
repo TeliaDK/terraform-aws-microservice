@@ -1,0 +1,1 @@
+# TeliaDK - AWS compute module
