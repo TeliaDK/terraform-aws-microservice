@@ -167,10 +167,28 @@ module "container_definition_envoy" {
   container_memory             = var.envoy_memory
   user                         = "1337"
 
+  ulimits = [
+    {
+      name      = "nofile"
+      hardLimit = 15000
+      softLimit = 15000
+    }
+  ]
+
   port_mappings = [
     {
-      hostPort      = 80
-      containerPort = 80
+      hostPort      = 9901
+      containerPort = 9901
+      protocol      = "tcp"
+    },
+    {
+      hostPort      = 15000
+      containerPort = 15000
+      protocol      = "tcp"
+    },
+    {
+      hostPort      = 15001
+      containerPort = 15001
       protocol      = "tcp"
     }
   ]
