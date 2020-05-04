@@ -1,4 +1,4 @@
-# TeliaDK - AWS compute module
+# TeliaDK - AWS microservice module
 
 Used for deploying microservices into AWS and utilise service discovery + service mesh (AppMesh)
 
