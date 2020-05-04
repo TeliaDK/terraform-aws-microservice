@@ -1,6 +1,21 @@
 # TeliaDK - AWS microservice module
 
-Used for deploying microservices into AWS and utilise service discovery + service mesh (AppMesh)
+Used for deploying microservices into AWS and utilise service discovery + service mesh (AppMesh).
+
+The module will create the following resources:
+
+1. New cloudwatch group under the /ecs/{var.app_name}
+2. New security group
+3. CloudMap service
+4. AppMesh virtual router
+5. AppMesh virtual service
+6. AppMesh virtual node
+7. AppMesh route
+8. xray daemon sidecar ECS container definition
+9. envoy proxy sidecar ECS container definition
+10. microservice ECS container definition
+11. microservice ECS task definition
+12. microservice ECS service
 
 ## Inputs:
 
