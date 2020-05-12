@@ -64,6 +64,8 @@ resource "aws_appmesh_virtual_router" "current" {
       }
     }
   }
+
+  tags = var.tags
 }
 
 resource "aws_appmesh_virtual_service" "current" {
@@ -77,6 +79,8 @@ resource "aws_appmesh_virtual_service" "current" {
       }
     }
   }
+
+  tags = var.tags
 }
 
 resource "aws_appmesh_virtual_node" "current" {
@@ -108,6 +112,8 @@ resource "aws_appmesh_virtual_node" "current" {
       }
     }
   }
+
+  tags = var.tags
 }
 
 resource "aws_appmesh_route" "current" {
@@ -129,6 +135,8 @@ resource "aws_appmesh_route" "current" {
       }
     }
   }
+
+  tags = var.tags
 }
 
 module "container_definition_xray" {
