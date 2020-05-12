@@ -302,6 +302,44 @@ resource "aws_ecs_task_definition" "current" {
   tags = var.tags
 }
 
+resource "aws_security_group_rule" "alb" {
+  type              = "ingress"
+  from_port         = var.load_balancer.listener_port
+  to_port           = var.load_balancer.listener_port
+  protocol          = "tcp"
+  cidr_blocks       = ["10.0.0.0/8"]
+  security_group_id = var.load_balancer.security_group
+  description       = var.app_name
+}
+
+resource "aws_alb_target_group" "current" {
+  name     = "${var.app_name}-tg"
+  port     = var.port
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
+  target_type = "ip"
+
+  health_check {
+    interval            = 30
+    path                = var.load_balancer.health_endpoint
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+  }
+
+  tags = var.tags
+}
+
+resource "aws_alb_listener" "current" {
+  load_balancer_arn = var.load_balancer.load_balancer_arn
+  port              = var.load_balancer.listener_port
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = aws_alb_target_group.current.id
+    type             = "forward"
+  }
+}
+
 resource "aws_ecs_service" "current" {
   service_registries {
     registry_arn = aws_service_discovery_service.current.arn
@@ -331,6 +369,12 @@ resource "aws_ecs_service" "current" {
 
   service_registries {
     registry_arn = aws_service_discovery_service.current.arn
+  }
+
+  load_balancer {
+    target_group_arn = aws_alb_target_group.current.arn
+    container_name   = var.microservice_container.name
+    container_port   = var.port
   }
 
   tags = var.tags

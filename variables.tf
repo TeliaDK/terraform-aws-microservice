@@ -164,6 +164,16 @@ variable "tags" {
   type = map(string)
 }
 
+variable "load_balancer" {
+  type = object({
+    load_balancer_arn = string
+    listener_port = number
+    security_group = string
+    health_endpoint = string
+  })
+  description = "Attributes needed for setting up ALB listener, target group, security group rule on specified listener."
+}
+
 variable "awslogs_datetime_format" {
   type = string
   description = "The format used in logs written by the application in the container. Used for ensuring that the aws log driver can parse the logs correctly and not split them into several entries (e.g. stack traces are kept in one entry)."
