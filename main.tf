@@ -258,6 +258,7 @@ module "container_definition_service" {
       awslogs-group         = "/ecs/${var.app_name}"
       awslogs-region        = "${data.aws_region.current.name}"
       awslogs-stream-prefix = "ecs"
+      awslogs-datetime-format = "${var.awslogs_datetime_format}"
     }
     secretOptions = []
   }
