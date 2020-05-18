@@ -64,6 +64,8 @@ resource "aws_appmesh_virtual_router" "current" {
       }
     }
   }
+
+  tags = var.tags
 }
 
 resource "aws_appmesh_virtual_service" "current" {
@@ -77,6 +79,8 @@ resource "aws_appmesh_virtual_service" "current" {
       }
     }
   }
+
+  tags = var.tags
 }
 
 resource "aws_appmesh_virtual_node" "current" {
@@ -108,6 +112,8 @@ resource "aws_appmesh_virtual_node" "current" {
       }
     }
   }
+
+  tags = var.tags
 }
 
 resource "aws_appmesh_route" "current" {
@@ -129,6 +135,8 @@ resource "aws_appmesh_route" "current" {
       }
     }
   }
+
+  tags = var.tags
 }
 
 module "container_definition_xray" {
@@ -250,6 +258,7 @@ module "container_definition_service" {
       awslogs-group         = "/ecs/${var.app_name}"
       awslogs-region        = "${data.aws_region.current.name}"
       awslogs-stream-prefix = "ecs"
+      awslogs-datetime-format = "${var.awslogs_datetime_format}"
     }
     secretOptions = []
   }
@@ -322,6 +331,16 @@ resource "aws_ecs_service" "current" {
 
   service_registries {
     registry_arn = aws_service_discovery_service.current.arn
+  }
+
+  dynamic "load_balancer" {
+    for_each = var.load_balancer_target_groups
+
+    content {
+      target_group_arn = load_balancer.value
+      container_name   = var.microservice_container.name
+      container_port   = var.port
+    }
   }
 
   tags = var.tags
