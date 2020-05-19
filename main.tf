@@ -334,10 +334,10 @@ resource "aws_ecs_service" "current" {
   }
 
   dynamic "load_balancer" {
-    for_each = var.load_balancer_target_groups
+    for_each = var.load_balancer == null ? [] : [var.load_balancer]
 
     content {
-      target_group_arn = load_balancer.value
+      target_group_arn = load_balancer.value.arn
       container_name   = var.microservice_container.name
       container_port   = var.port
     }
