@@ -159,7 +159,7 @@ module "container_definition_xray" {
     logDriver = "awslogs"
     options = {
       awslogs-group         = "/ecs/${var.app_name}"
-      awslogs-region        = "${data.aws_region.current.name}"
+      awslogs-region        = data.aws_region.current.name
       awslogs-stream-prefix = "ecs"
     }
     secretOptions = []
@@ -227,7 +227,7 @@ module "container_definition_envoy" {
     logDriver = "awslogs"
     options = {
       awslogs-group         = "/ecs/${var.app_name}"
-      awslogs-region        = "${data.aws_region.current.name}"
+      awslogs-region        = data.aws_region.current.name
       awslogs-stream-prefix = "ecs"
     }
     secretOptions = []
@@ -255,10 +255,10 @@ module "container_definition_service" {
   log_configuration = {
     logDriver = "awslogs"
     options = {
-      awslogs-group         = "/ecs/${var.app_name}"
-      awslogs-region        = "${data.aws_region.current.name}"
-      awslogs-stream-prefix = "ecs"
-      awslogs-datetime-format = "${var.awslogs_datetime_format}"
+      awslogs-group           = "/ecs/${var.app_name}"
+      awslogs-region          = data.aws_region.current.name
+      awslogs-stream-prefix   = "ecs"
+      awslogs-datetime-format = var.awslogs_datetime_format
     }
     secretOptions = []
   }
