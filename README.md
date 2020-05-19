@@ -24,7 +24,8 @@ locals {
 
 
 module "microservice" {
-  source  = "git::https://github.com/teliadk/terraform-aws-microservice?ref=0.0.3"
+  source  = "TeliaDK/microservice/aws"
+  version = "0.0.4"
 
   region = "eu-west-1"
 
@@ -52,6 +53,10 @@ module "microservice" {
     memory = 1280
   }
 
+  load_balancer = {
+    arn = "arn:aws:elasticloadbalancing:eu-west-1:123456789:loadbalancer/app/microservices/abababababab"
+  }
+
   cloud_map = {
     namespace = {
       id   = "123456789"
@@ -68,34 +73,36 @@ module "microservice" {
 
 ## Inputs:
 
-| Name                                 | Description                                                                                                                                                              |     Type     |  Default   | Required |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------: | :--------: | :------: |
-| region                               | The AWS region to deploy the compute module in                                                                                                                           |    string    | eu-west-1  |    no    |
-| microservice_container               | Settings for the microservice container                                                                                                                                  |    object    |     -      |   yes    |
-| port                                 | The port that will be uesd for port mapping <HOST>:<CONTAINER>                                                                                                           |    number    |    8080    |    no    |
-| cpu                                  | The total vCPU to allocate for the ECS service. Valid configuration at https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html                      |    number    |    512     |    no    |
-| memory                               | The total memory to allocate for the ECS service. Valid configuration at https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html                    |    number    |    2048    |    no    |
-| xray_cpu                             | The total vCPU to allocate to the xray container                                                                                                                         |    number    |     32     |    no    |
-| xray_memory                          | The total memory to allocate to the xray container                                                                                                                       |    number    |    256     |    no    |
-| envoy_cpu                            | The total vCPU to allocate to the envoy container                                                                                                                        |    number    |    256     |    no    |
-| envoy_cpu                            | The total memory to allocate to the envoy container                                                                                                                      |    number    |    512     |    no    |
-| microservice_cpu                     | The total vCPU to allocate to the microservice                                                                                                                           |    number    |    224     |    no    |
-| microservice_memory                  | The total memory to allocate to the microservice                                                                                                                         |    number    |    1280    |    no    |
-| ecs_cluster_name                     | The ECS cluster to deploy the ECS Fargate into                                                                                                                           |    string    |     -      |   yes    |
-| app_name                             | The shared name for the ECS Fargate service and task definitions                                                                                                         |    string    |     -      |   yes    |
-| task_execution_role_arn              | The name of the execution role to use with the service                                                                                                                   |    string    |    null    |    no    |
-| task_role_arn                        | The name of the task role to use with the service                                                                                                                        |    string    |    null    |    no    |
-| deployment_controller_type           | The deployment controller type to use in ECS service. For blue/green, CODE_DEPLOY must be used                                                                           |    string    |    ECS     |    no    |
-| envoy_container_name                 | The name of the envoy container to be used in AppMesh proxy                                                                                                              |    string    |   envoy    |    no    |
-| envoy_ignored_uid                    | Which UID to ignore in envoy docker container                                                                                                                            |    string    |    1337    |    no    |
-| service_discovery_dns_routing_policy | The routing policy that you want to apply to all records that Route 53 creates when you register an instance and specify the service. Valid Values: MULTIVALUE, WEIGHTED |    string    | MULTIVALUE |    no    |
-| cloud_map                            | Settings needed to setup service discovery through AWS CloudMap                                                                                                          |    object    |     -      |   yes    |
-| env_variables                        | Environment variables for the service                                                                                                                                    |    object    |    null    |    no    |
-| secrets                              | Secrets for the service. Use arn of paramaters in parameter store for the valueFrom property                                                                             |    object    |    null    |    no    |
-| vpc_id                               | The VPC to use                                                                                                                                                           |    string    |     -      |   yes    |
-| subnet_ids                           | The subnets for the ECS service network configuration                                                                                                                    | list(string) |     -      |   yes    |
-| appmesh_name                         | Name of AppMesh to register service components in                                                                                                                        |    string    |     -      |   yes    |
-| tags                                 | Tags to use for the components created by the module                                                                                                                     | map(string)  |     -      |   yes    |
+| Name                                 | Description                                                                                                                                                                                                                    |     Type     |      Default      | Required |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------: | :---------------: | :------: |
+| region                               | The AWS region to deploy the compute module in                                                                                                                                                                                 |    string    |     eu-west-1     |    no    |
+| microservice_container               | Settings for the microservice container                                                                                                                                                                                        |    object    |         -         |   yes    |
+| port                                 | The port that will be uesd for port mapping <HOST>:<CONTAINER>                                                                                                                                                                 |    number    |       8080        |    no    |
+| cpu                                  | The total vCPU to allocate for the ECS service. Valid configuration at https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html                                                                            |    number    |        512        |    no    |
+| memory                               | The total memory to allocate for the ECS service. Valid configuration at https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html                                                                          |    number    |       2048        |    no    |
+| xray_cpu                             | The total vCPU to allocate to the xray container                                                                                                                                                                               |    number    |        32         |    no    |
+| xray_memory                          | The total memory to allocate to the xray container                                                                                                                                                                             |    number    |        256        |    no    |
+| envoy_cpu                            | The total vCPU to allocate to the envoy container                                                                                                                                                                              |    number    |        256        |    no    |
+| envoy_cpu                            | The total memory to allocate to the envoy container                                                                                                                                                                            |    number    |        512        |    no    |
+| microservice_cpu                     | The total vCPU to allocate to the microservice                                                                                                                                                                                 |    number    |        224        |    no    |
+| microservice_memory                  | The total memory to allocate to the microservice                                                                                                                                                                               |    number    |       1280        |    no    |
+| ecs_cluster_name                     | The ECS cluster to deploy the ECS Fargate into                                                                                                                                                                                 |    string    |         -         |   yes    |
+| app_name                             | The shared name for the ECS Fargate service and task definitions                                                                                                                                                               |    string    |         -         |   yes    |
+| task_execution_role_arn              | The name of the execution role to use with the service                                                                                                                                                                         |    string    |       null        |    no    |
+| task_role_arn                        | The name of the task role to use with the service                                                                                                                                                                              |    string    |       null        |    no    |
+| deployment_controller_type           | The deployment controller type to use in ECS service. For blue/green, CODE_DEPLOY must be used                                                                                                                                 |    string    |        ECS        |    no    |
+| envoy_container_name                 | The name of the envoy container to be used in AppMesh proxy                                                                                                                                                                    |    string    |       envoy       |    no    |
+| envoy_ignored_uid                    | Which UID to ignore in envoy docker container                                                                                                                                                                                  |    string    |       1337        |    no    |
+| service_discovery_dns_routing_policy | The routing policy that you want to apply to all records that Route 53 creates when you register an instance and specify the service. Valid Values: MULTIVALUE, WEIGHTED                                                       |    string    |    MULTIVALUE     |    no    |
+| cloud_map                            | Settings needed to setup service discovery through AWS CloudMap                                                                                                                                                                |    object    |         -         |   yes    |
+| env_variables                        | Environment variables for the service                                                                                                                                                                                          |    object    |       null        |    no    |
+| secrets                              | Secrets for the service. Use arn of paramaters in parameter store for the valueFrom property                                                                                                                                   |    object    |       null        |    no    |
+| vpc_id                               | The VPC to use                                                                                                                                                                                                                 |    string    |         -         |   yes    |
+| subnet_ids                           | The subnets for the ECS service network configuration                                                                                                                                                                          | list(string) |         -         |   yes    |
+| appmesh_name                         | Name of AppMesh to register service components in                                                                                                                                                                              |    string    |         -         |   yes    |
+| tags                                 | Tags to use for the components created by the module                                                                                                                                                                           | map(string)  |         -         |   yes    |
+| load_balancer                        | Load balancer config to be used in ECS service                                                                                                                                                                                 |    object    |       null        |    no    |
+| awslogs_datetime_format              | The format used in logs written by the application in the container. Used for ensuring that the aws log driver can parse the logs correctly and not split them into several entries (e.g. stack traces are kept in one entry). |    string    | %Y-%m-%d %H:%M:%S |    no    |
 
 ## Resources
 

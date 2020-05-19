@@ -164,13 +164,16 @@ variable "tags" {
   type = map(string)
 }
 
-variable "load_balancer_target_groups" {
-  type = list(string)
-  description = "List of target group arns, used for associating the ECS service with one or more target groups."
+variable "load_balancer" {
+  type = object({
+    arn = string
+  })
+  description = "Load balancer config to be used in ECS service"
+  default     = null
 }
 
 variable "awslogs_datetime_format" {
-  type = string
+  type        = string
   description = "The format used in logs written by the application in the container. Used for ensuring that the aws log driver can parse the logs correctly and not split them into several entries (e.g. stack traces are kept in one entry)."
-  default = "%Y-%m-%d %H:%M:%S"
+  default     = "%Y-%m-%d %H:%M:%S"
 }
