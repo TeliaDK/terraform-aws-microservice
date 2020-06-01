@@ -3,7 +3,20 @@ locals {
   service_discovery_dns_ttl                        = 10
   service_discovery_health_check_failure_threshold = 1
   aws_ecs_task_definition_family                   = var.app_name
+
+  cpu_utilization_high_threshold    = var.autoscaling_cpu != null ? var.autoscaling_cpu.utilization_high_threshold : 0
+  cpu_utilization_low_threshold     = var.autoscaling_cpu != null ? var.autoscaling_cpu.utilization_low_threshold : 0
+  memory_utilization_high_threshold = var.autoscaling_memory != null ? var.autoscaling_memory.utilization_high_threshold : 0
+  memory_utilization_low_threshold  = var.autoscaling_memory != null ? var.autoscaling_memory.utilization_low_threshold : 0
+
+  thresholds = {
+    CPUUtilizationHighThreshold    = min(max(local.cpu_utilization_high_threshold, 0), 100)
+    CPUUtilizationLowThreshold     = min(max(local.cpu_utilization_low_threshold, 0), 100)
+    MemoryUtilizationHighThreshold = min(max(local.memory_utilization_high_threshold, 0), 100)
+    MemoryUtilizationLowThreshold  = min(max(local.memory_utilization_low_threshold, 0), 100)
+  }
 }
+
 
 resource "aws_cloudwatch_log_group" "current" {
   name              = "/ecs/${var.app_name}"
@@ -303,10 +316,6 @@ resource "aws_ecs_task_definition" "current" {
 }
 
 resource "aws_ecs_service" "current" {
-  service_registries {
-    registry_arn = aws_service_discovery_service.current.arn
-  }
-
   name            = var.app_name
   cluster         = data.aws_ecs_cluster.current.arn
   desired_count   = 1
@@ -322,7 +331,7 @@ resource "aws_ecs_service" "current" {
   }
 
   lifecycle {
-    ignore_changes = [task_definition]
+    ignore_changes = [task_definition, desired_count]
   }
 
   deployment_controller {
@@ -344,4 +353,227 @@ resource "aws_ecs_service" "current" {
   }
 
   tags = var.tags
+}
+
+module "scale_up_label" {
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  enabled    = var.autoscaling.enabled
+  name       = var.autoscaling.name
+  namespace  = var.autoscaling.namespace
+  stage      = var.autoscaling.stage
+  attributes = compact(concat(var.autoscaling.attributes, ["up"]))
+  tags       = var.tags
+}
+
+module "scale_down_label" {
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  enabled    = var.autoscaling.enabled
+  name       = var.autoscaling.name
+  namespace  = var.autoscaling.namespace
+  stage      = var.autoscaling.stage
+  attributes = compact(concat(var.autoscaling.attributes, ["down"]))
+  tags       = var.tags
+}
+
+
+module "cpu_utilization_high_alarm_label" {
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  enabled    = var.autoscaling.enabled
+  name       = var.autoscaling.name
+  namespace  = var.autoscaling.namespace
+  stage      = var.autoscaling.stage
+  attributes = compact(concat(var.autoscaling.attributes, ["cpu", "utilization", "high"]))
+  delimiter  = var.autoscaling_delimiter
+  tags       = var.tags
+}
+
+module "cpu_utilization_low_alarm_label" {
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  enabled    = var.autoscaling.enabled
+  name       = var.autoscaling.name
+  namespace  = var.autoscaling.namespace
+  stage      = var.autoscaling.stage
+  attributes = compact(concat(var.autoscaling.attributes, ["cpu", "utilization", "low"]))
+  delimiter  = var.autoscaling_delimiter
+  tags       = var.tags
+}
+
+module "memory_utilization_high_alarm_label" {
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  enabled    = var.autoscaling.enabled
+  name       = var.autoscaling.name
+  namespace  = var.autoscaling.namespace
+  stage      = var.autoscaling.stage
+  attributes = compact(concat(var.autoscaling.attributes, ["memory", "utilization", "high"]))
+  delimiter  = var.autoscaling_delimiter
+  tags       = var.tags
+}
+
+module "memory_utilization_low_alarm_label" {
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  enabled    = var.autoscaling.enabled
+  name       = var.autoscaling.name
+  namespace  = var.autoscaling.namespace
+  stage      = var.autoscaling.stage
+  attributes = compact(concat(var.autoscaling.attributes, ["memory", "utilization", "low"]))
+  tags       = var.tags
+}
+
+resource "aws_appautoscaling_target" "default" {
+  count              = var.autoscaling.enabled ? 1 : 0
+  service_namespace  = "ecs"
+  resource_id        = aws_ecs_service.current.id
+  scalable_dimension = "ecs:service:DesiredCount"
+  min_capacity       = var.autoscaling.min_capacity
+  max_capacity       = var.autoscaling.max_capacity
+}
+
+resource "aws_appautoscaling_policy" "up" {
+  count              = var.autoscaling.enabled ? 1 : 0
+  name               = module.scale_up_label.id
+  service_namespace  = "ecs"
+  resource_id        = aws_ecs_service.current.id
+  scalable_dimension = "ecs:service:DesiredCount"
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = var.autoscaling.scale_up_cooldown
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = var.autoscaling.scale_up_adjustment
+    }
+  }
+}
+
+resource "aws_appautoscaling_policy" "down" {
+  count              = var.autoscaling.enabled ? 1 : 0
+  name               = module.scale_down_label.id
+  service_namespace  = "ecs"
+  resource_id        = aws_ecs_service.current.id
+  scalable_dimension = "ecs:service:DesiredCount"
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = var.autoscaling.scale_down_cooldown
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_upper_bound = 0
+      scaling_adjustment          = var.autoscaling.scale_down_adjustment
+    }
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
+  count               = var.autoscaling_cpu != null ? 1 : 0
+  alarm_name          = module.cpu_utilization_high_alarm_label.id
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = var.autoscaling_cpu.utilization_high_evaluation_periods
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = var.autoscaling_cpu.utilization_high_period
+  statistic           = "Average"
+  threshold           = local.thresholds["CPUUtilizationHighThreshold"]
+
+  alarm_description = format(
+    var.autoscaling_alarm_description,
+    "CPU",
+    "High",
+    var.autoscaling_cpu.utilization_high_period / 60,
+    var.autoscaling_cpu.utilization_high_evaluation_periods
+  )
+
+  alarm_actions = compact(var.autoscaling_cpu.utilization_high_alarm_actions)
+  ok_actions    = compact(var.autoscaling_cpu.utilization_high_ok_actions)
+
+  dimensions = {
+    "ClusterName" = aws_ecs_service.current.cluster
+    "ServiceName" = aws_ecs_service.current.name
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
+  count               = var.autoscaling_cpu != null ? 1 : 0
+  alarm_name          = module.cpu_utilization_low_alarm_label.id
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = var.autoscaling_cpu.utilization_low_evaluation_periods
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = var.autoscaling_cpu.utilization_low_period
+  statistic           = "Average"
+  threshold           = local.thresholds["CPUUtilizationLowThreshold"]
+
+  alarm_description = format(
+    var.autoscaling_alarm_description,
+    "CPU",
+    "Low",
+    var.autoscaling_cpu.utilization_low_period / 60,
+    var.autoscaling_cpu.utilization_low_evaluation_periods
+  )
+
+  alarm_actions = compact(var.autoscaling_cpu.utilization_low_alarm_actions)
+  ok_actions    = compact(var.autoscaling_cpu.utilization_low_ok_actions)
+
+  dimensions = {
+    "ClusterName" = aws_ecs_service.current.cluster
+    "ServiceName" = aws_ecs_service.current.name
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
+  count               = var.autoscaling_memory != null ? 1 : 0
+  alarm_name          = module.memory_utilization_high_alarm_label.id
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = var.autoscaling_memory.utilization_high_evaluation_periods
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/ECS"
+  period              = var.autoscaling_memory.utilization_high_period
+  statistic           = "Average"
+  threshold           = local.thresholds["MemoryUtilizationHighThreshold"]
+
+  alarm_description = format(
+    var.autoscaling_alarm_description,
+    "Memory",
+    "Hight",
+    var.autoscaling_memory.utilization_high_period / 60,
+    var.autoscaling_memory.utilization_high_evaluation_periods
+  )
+
+  alarm_actions = compact(var.autoscaling_memory.utilization_high_alarm_actions)
+  ok_actions    = compact(var.autoscaling_memory.utilization_high_ok_actions)
+
+  dimensions = {
+    "ClusterName" = aws_ecs_service.current.cluster
+    "ServiceName" = aws_ecs_service.current.name
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "memory_utilization_low" {
+  count               = var.autoscaling_memory != null ? 1 : 0
+  alarm_name          = module.memory_utilization_low_alarm_label.id
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = var.autoscaling_memory.utilization_low_evaluation_periods
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/ECS"
+  period              = var.autoscaling_memory.utilization_low_period
+  statistic           = "Average"
+  threshold           = local.thresholds["MemoryUtilizationLowThreshold"]
+
+  alarm_description = format(
+    var.autoscaling_alarm_description,
+    "Memory",
+    "Low",
+    var.autoscaling_memory.utilization_low_period / 60,
+    var.autoscaling_memory.utilization_low_evaluation_periods
+  )
+
+  alarm_actions = compact(var.autoscaling_memory.utilization_low_alarm_actions)
+  ok_actions    = compact(var.autoscaling_memory.utilization_low_ok_actions)
+
+  dimensions = {
+    "ClusterName" = aws_ecs_service.current.cluster
+    "ServiceName" = aws_ecs_service.current.name
+  }
 }
