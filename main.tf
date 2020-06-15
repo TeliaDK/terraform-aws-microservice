@@ -303,10 +303,6 @@ resource "aws_ecs_task_definition" "current" {
 }
 
 resource "aws_ecs_service" "current" {
-  service_registries {
-    registry_arn = aws_service_discovery_service.current.arn
-  }
-
   name            = var.app_name
   cluster         = data.aws_ecs_cluster.current.arn
   desired_count   = 1
