@@ -182,7 +182,7 @@ module "container_definition_xray" {
 module "container_definition_envoy" {
   source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.23.0"
   container_name               = "envoy"
-  container_image              = "840364872350.dkr.ecr.eu-west-1.amazonaws.com/aws-appmesh-envoy:v1.12.2.1-prod"
+  container_image              = "840364872350.dkr.ecr.eu-west-1.amazonaws.com/aws-appmesh-envoy:v1.12.4.0-prod"
   container_cpu                = var.envoy_cpu
   container_memory_reservation = var.envoy_memory
   container_memory             = var.envoy_memory
@@ -343,10 +343,10 @@ resource "aws_ecs_service" "current" {
   }
 
   dynamic "load_balancer" {
-    for_each = var.load_balancer == null ? [] : [var.load_balancer]
+    for_each = var.load_balancers == null ? [] : var.load_balancers
 
     content {
-      target_group_arn = load_balancer.value.arn
+      target_group_arn = load_balancer.value.target_group_arn
       container_name   = var.microservice_container.name
       container_port   = var.port
     }

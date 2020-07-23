@@ -164,12 +164,12 @@ variable "tags" {
   type = map(string)
 }
 
-variable "load_balancer" {
-  type = object({
-    arn = string
-  })
-  default     = null
+variable "load_balancers" {
+  type = list(object({
+    target_group_arn = string
+  }))
   description = "Load balancer config to be used in ECS service"
+  default     = null
 }
 
 variable "awslogs_datetime_format" {
