@@ -13,22 +13,8 @@ resource "aws_cloudwatch_log_group" "current" {
 
 resource "aws_security_group" "current" {
   name        = var.app_name
-  description = "Ingress rules for ${var.app_name}"
+  description = "Security group for ${var.app_name}"
   vpc_id      = data.aws_vpc.current.id
-
-  ingress {
-    protocol    = "tcp"
-    from_port   = var.port
-    to_port     = var.port
-    cidr_blocks = ["10.0.0.0/8"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
   tags = var.tags
 }
