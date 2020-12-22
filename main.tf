@@ -13,7 +13,7 @@ resource "aws_cloudwatch_log_group" "current" {
 
 resource "aws_security_group" "current" {
   name        = var.app_name
-  description = "Security group for ${var.app_name}"
+  description = "Ingress rules for ${var.app_name}"
   vpc_id      = data.aws_vpc.current.id
 
   tags = var.tags
@@ -126,7 +126,7 @@ resource "aws_appmesh_route" "current" {
 }
 
 module "container_definition_xray" {
-  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.23.0"
+  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.46.0"
   container_name               = "xray-daemon"
   container_image              = "amazon/aws-xray-daemon"
   container_cpu                = var.xray_cpu
@@ -153,7 +153,7 @@ module "container_definition_xray" {
 }
 
 module "container_definition_envoy" {
-  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.23.0"
+  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.46.0"
   container_name               = "envoy"
   container_image              = "840364872350.dkr.ecr.eu-west-1.amazonaws.com/aws-appmesh-envoy:v1.12.4.0-prod"
   container_cpu                = var.envoy_cpu
@@ -221,7 +221,7 @@ module "container_definition_envoy" {
 }
 
 module "container_definition_service" {
-  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.23.0"
+  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.46.0"
   container_name               = var.microservice_container.name
   container_image              = var.microservice_container.image
   container_cpu                = var.microservice_container.cpu
@@ -267,9 +267,9 @@ resource "aws_ecs_task_definition" "current" {
   execution_role_arn       = var.task_execution_role_arn
   container_definitions    = <<EOF
   [
-    ${module.container_definition_xray.json_map},
-    ${module.container_definition_envoy.json_map},
-    ${module.container_definition_service.json_map}
+    ${module.container_definition_xray.json_map_encoded},
+    ${module.container_definition_envoy.json_map_encoded},
+    ${module.container_definition_service.json_map_encoded}
   ]
   EOF
 
