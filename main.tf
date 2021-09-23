@@ -85,6 +85,15 @@ resource "aws_appmesh_virtual_node" "current" {
         port     = var.port
         protocol = "http"
       }
+
+      timeout {
+        http {
+          idle {
+            unit  = "s"
+            value = var.appmesh_virtual_node_http_timeout
+          }
+        }
+      }
     }
 
     service_discovery {
@@ -111,6 +120,13 @@ resource "aws_appmesh_route" "current" {
     http_route {
       match {
         prefix = "/"
+      }
+
+      timeout {
+        idle {
+          unit  = "s"
+          value = var.appmesh_virtual_route_http_timeout
+        }
       }
 
       action {

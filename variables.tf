@@ -177,3 +177,15 @@ variable "awslogs_datetime_format" {
   description = "The format used in logs written by the application in the container. Used for ensuring that the aws log driver can parse the logs correctly and not split them into several entries (e.g. stack traces are kept in one entry)."
   default     = "%Y-%m-%d %H:%M:%S"
 }
+
+variable "appmesh_virtual_node_http_timeout" {
+  type        = number
+  description = "The timeout for HTTP requests to the node in seconds"
+  default     = 15
+}
+
+variable "appmesh_virtual_route_http_timeout" {
+  type        = number
+  description = "The timeout for HTTP requests to the route in seconds"
+  default     = 15
+}
