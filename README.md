@@ -103,6 +103,8 @@ module "microservice" {
 | tags                                 | Tags to use for the components created by the module                                                                                                                                                                           | map(string)  |         -         |   yes    |
 | load_balancer                        | Load balancer config to be used in ECS service                                                                                                                                                                                 |    object    |       null        |    no    |
 | awslogs_datetime_format              | The format used in logs written by the application in the container. Used for ensuring that the aws log driver can parse the logs correctly and not split them into several entries (e.g. stack traces are kept in one entry). |    string    | %Y-%m-%d %H:%M:%S |    no    |
+| appmesh_virtual_node_http_timeout    | The timeout for HTTP requests to the node in seconds                                                                                                                                                                           |    number    |        15         |    no    |
+| appmesh_virtual_route_http_timeout   | The timeout for HTTP requests to the route in seconds                                                                                                                                                                          |    number    |        15         |    no    |
 
 ## Resources
 
