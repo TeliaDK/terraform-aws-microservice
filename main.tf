@@ -358,7 +358,7 @@ resource "aws_ecs_service" "current" {
 }
 
 module "scale_up_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
   namespace  = var.autoscaling.namespace
@@ -368,7 +368,7 @@ module "scale_up_label" {
 }
 
 module "scale_down_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
   namespace  = var.autoscaling.namespace
@@ -379,7 +379,7 @@ module "scale_down_label" {
 
 
 module "cpu_utilization_high_alarm_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
   namespace  = var.autoscaling.namespace
@@ -390,7 +390,7 @@ module "cpu_utilization_high_alarm_label" {
 }
 
 module "cpu_utilization_low_alarm_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
   namespace  = var.autoscaling.namespace
@@ -401,7 +401,7 @@ module "cpu_utilization_low_alarm_label" {
 }
 
 module "memory_utilization_high_alarm_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
   namespace  = var.autoscaling.namespace
@@ -412,7 +412,7 @@ module "memory_utilization_high_alarm_label" {
 }
 
 module "memory_utilization_low_alarm_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
   namespace  = var.autoscaling.namespace
