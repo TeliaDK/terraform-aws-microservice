@@ -29,20 +29,6 @@ resource "aws_security_group" "current" {
   description = "Ingress rules for ${var.app_name}"
   vpc_id      = data.aws_vpc.current.id
 
-  ingress {
-    protocol    = "tcp"
-    from_port   = var.port
-    to_port     = var.port
-    cidr_blocks = ["10.0.0.0/8"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   tags = var.tags
 }
 
@@ -112,6 +98,15 @@ resource "aws_appmesh_virtual_node" "current" {
         port     = var.port
         protocol = "http"
       }
+
+      timeout {
+        http {
+          idle {
+            unit  = "s"
+            value = var.appmesh_virtual_node_http_timeout
+          }
+        }
+      }
     }
 
     service_discovery {
@@ -140,6 +135,13 @@ resource "aws_appmesh_route" "current" {
         prefix = "/"
       }
 
+      timeout {
+        idle {
+          unit  = "s"
+          value = var.appmesh_virtual_route_http_timeout
+        }
+      }
+
       action {
         weighted_target {
           virtual_node = aws_appmesh_virtual_node.current.name
@@ -153,7 +155,7 @@ resource "aws_appmesh_route" "current" {
 }
 
 module "container_definition_xray" {
-  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.23.0"
+  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.46.0"
   container_name               = "xray-daemon"
   container_image              = "amazon/aws-xray-daemon"
   container_cpu                = var.xray_cpu
@@ -180,7 +182,7 @@ module "container_definition_xray" {
 }
 
 module "container_definition_envoy" {
-  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.23.0"
+  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.46.0"
   container_name               = "envoy"
   container_image              = "840364872350.dkr.ecr.eu-west-1.amazonaws.com/aws-appmesh-envoy:v1.12.4.0-prod"
   container_cpu                = var.envoy_cpu
@@ -248,7 +250,7 @@ module "container_definition_envoy" {
 }
 
 module "container_definition_service" {
-  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.23.0"
+  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.46.0"
   container_name               = var.microservice_container.name
   container_image              = var.microservice_container.image
   container_cpu                = var.microservice_container.cpu
@@ -294,9 +296,9 @@ resource "aws_ecs_task_definition" "current" {
   execution_role_arn       = var.task_execution_role_arn
   container_definitions    = <<EOF
   [
-    ${module.container_definition_xray.json_map},
-    ${module.container_definition_envoy.json_map},
-    ${module.container_definition_service.json_map}
+    ${module.container_definition_xray.json_map_encoded},
+    ${module.container_definition_envoy.json_map_encoded},
+    ${module.container_definition_service.json_map_encoded}
   ]
   EOF
 
