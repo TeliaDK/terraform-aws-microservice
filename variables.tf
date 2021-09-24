@@ -178,6 +178,71 @@ variable "awslogs_datetime_format" {
   default     = "%Y-%m-%d %H:%M:%S"
 }
 
+variable "autoscaling" {
+  type = object({
+    enabled               = bool
+    name                  = string
+    namespace             = string
+    stage                 = string
+    attributes            = list(string)
+    min_capacity          = number
+    max_capacity          = number
+    scale_down_adjustment = number
+    scale_down_cooldown   = number
+    scale_up_adjustment   = number
+    scale_up_cooldown     = number
+  })
+  default     = null
+  description = "Used to define and enable autoscaling for the ECS service"
+}
+
+
+variable "autoscaling_alarm_description" {
+  type        = string
+  description = "The string to format and use as the alarm description"
+  default     = "Average service %v utilization %v last %d minute(s) over %v period(s)"
+}
+
+variable "autoscaling_delimiter" {
+  type        = string
+  default     = "-"
+  description = "Delimiter between `namespace`, `stage`, `name` and `attributes`"
+}
+
+variable "autoscaling_cpu" {
+  type = object({
+    utilization_high_threshold          = number
+    utilization_high_evaluation_periods = number
+    utilization_high_period             = number
+    utilization_high_alarm_actions      = list(string)
+    utilization_high_ok_actions         = list(string)
+    utilization_low_threshold           = number
+    utilization_low_evaluation_periods  = number
+    utilization_low_period              = number
+    utilization_low_alarm_actions       = list(string)
+    utilization_low_ok_actions          = list(string)
+  })
+  default     = null
+  description = "Used to define autoscaling based on CPU usage"
+}
+
+variable "autoscaling_memory" {
+  type = object({
+    utilization_high_threshold          = number
+    utilization_high_evaluation_periods = number
+    utilization_high_period             = number
+    utilization_high_alarm_actions      = list(string)
+    utilization_high_ok_actions         = list(string)
+    utilization_low_threshold           = number
+    utilization_low_evaluation_periods  = number
+    utilization_low_period              = number
+    utilization_low_alarm_actions       = list(string)
+    utilization_low_ok_actions          = list(string)
+  })
+  default     = null
+  description = "Used to define autoscaling based on Memory usage"
+}
+
 variable "appmesh_virtual_node_http_timeout" {
   type        = number
   description = "The timeout for HTTP requests to the node in seconds"

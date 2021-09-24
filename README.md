@@ -67,6 +67,33 @@ module "microservice" {
     }
   }
 
+  autoscaling = {
+    enabled               = true
+    name                  = "my-service"
+    namespace             = "ecs/autoscaling"
+    stage                 = "dev"
+    attributes            = []
+    min_capacity          = 1
+    max_capacity          = 3
+    scale_down_adjustment = 1
+    scale_down_cooldown   = 1
+    scale_up_adjustment   = 1
+    scale_up_cooldown     = 1
+  }
+
+  autoscaling_cpu = {
+    utilization_high_threshold          = 50
+    utilization_high_evaluation_periods = 1
+    utilization_high_period             = 300
+    utilization_high_alarm_actions      = []
+    utilization_high_ok_actions         = []
+    utilization_low_threshold           = 20
+    utilization_low_evaluation_periods  = 1
+    utilization_low_period              = 300
+    utilization_low_alarm_actions       = []
+    utilization_low_ok_actions          = []
+  }
+
   tags = local.tags
 }
 ```
@@ -105,6 +132,11 @@ module "microservice" {
 | awslogs_datetime_format              | The format used in logs written by the application in the container. Used for ensuring that the aws log driver can parse the logs correctly and not split them into several entries (e.g. stack traces are kept in one entry). |    string    | %Y-%m-%d %H:%M:%S |    no    |
 | appmesh_virtual_node_http_timeout    | The timeout for HTTP requests to the node in seconds                                                                                                                                                                           |    number    |        15         |    no    |
 | appmesh_virtual_route_http_timeout   | The timeout for HTTP requests to the route in seconds                                                                                                                                                                          |    number    |        15         |    no    |
+| autoscaling                          | Used to define and enable autoscaling for the ECS service                                                                                                                                                                      |    object    |                                 null                                  |    no    |
+| autoscaling_alarm_description        | The string to format and use as the alarm description                                                                                                                                                                          |    string    | Average service %v utilization %v last %d minute(s) over %v period(s) |    no    |
+| autoscaling_delimiter                | Delimiter between `namespace`, `stage`, `name` and `attributes`                                                                                                                                                                |    string    |                                   -                                   |    no    |
+| autoscaling_cpu                      | Used to define autoscaling based on CPU usage                                                                                                                                                                                  |    object    |                                 null                                  |    no    |
+| autoscaling_memory                   | Used to define autoscaling based on Memory usage    
 
 ## Resources
 
