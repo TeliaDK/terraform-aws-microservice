@@ -1,4 +1,5 @@
 locals {
+  autoscaling_enabled                              = var.autoscaling != null ? var.autoscaling.enabled : false
   cloudwatch_retention_in_days                     = 30
   service_discovery_dns_ttl                        = 10
   service_discovery_health_check_failure_threshold = 1
@@ -366,6 +367,7 @@ resource "aws_ecs_service" "current" {
 }
 
 module "scale_up_label" {
+  count      = local.autoscaling_enabled ? 1 : 0
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
@@ -376,6 +378,7 @@ module "scale_up_label" {
 }
 
 module "scale_down_label" {
+  count      = local.autoscaling_enabled ? 1 : 0
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
@@ -387,6 +390,7 @@ module "scale_down_label" {
 
 
 module "cpu_utilization_high_alarm_label" {
+  count      = local.autoscaling_enabled ? 1 : 0
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
@@ -398,6 +402,7 @@ module "cpu_utilization_high_alarm_label" {
 }
 
 module "cpu_utilization_low_alarm_label" {
+  count      = local.autoscaling_enabled ? 1 : 0
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
@@ -409,6 +414,7 @@ module "cpu_utilization_low_alarm_label" {
 }
 
 module "memory_utilization_high_alarm_label" {
+  count      = local.autoscaling_enabled ? 1 : 0
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
@@ -420,6 +426,7 @@ module "memory_utilization_high_alarm_label" {
 }
 
 module "memory_utilization_low_alarm_label" {
+  count      = local.autoscaling_enabled ? 1 : 0
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
@@ -430,7 +437,7 @@ module "memory_utilization_low_alarm_label" {
 }
 
 resource "aws_appautoscaling_target" "default" {
-  count              = var.autoscaling.enabled ? 1 : 0
+  count              = local.autoscaling_enabled ? 1 : 0
   service_namespace  = "ecs"
   resource_id        = aws_ecs_service.current.id
   scalable_dimension = "ecs:service:DesiredCount"
@@ -439,8 +446,8 @@ resource "aws_appautoscaling_target" "default" {
 }
 
 resource "aws_appautoscaling_policy" "up" {
-  count              = var.autoscaling.enabled ? 1 : 0
-  name               = module.scale_up_label.id
+  count              = local.autoscaling_enabled ? 1 : 0
+  name               = var.autoscaling != null ? module.scale_up_label.id : null
   service_namespace  = "ecs"
   resource_id        = aws_ecs_service.current.id
   scalable_dimension = "ecs:service:DesiredCount"
@@ -458,8 +465,8 @@ resource "aws_appautoscaling_policy" "up" {
 }
 
 resource "aws_appautoscaling_policy" "down" {
-  count              = var.autoscaling.enabled ? 1 : 0
-  name               = module.scale_down_label.id
+  count              = local.autoscaling_enabled ? 1 : 0
+  name               = local.autoscaling_enabled ? module.scale_down_label.id : null
   service_namespace  = "ecs"
   resource_id        = aws_ecs_service.current.id
   scalable_dimension = "ecs:service:DesiredCount"
@@ -477,8 +484,8 @@ resource "aws_appautoscaling_policy" "down" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
-  count               = var.autoscaling_cpu != null ? 1 : 0
-  alarm_name          = module.cpu_utilization_high_alarm_label.id
+  count               = local.autoscaling_enabled ? 1 : 0
+  alarm_name          = local.autoscaling_enabled ? module.cpu_utilization_high_alarm_label.id : null
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.autoscaling_cpu.utilization_high_evaluation_periods
   metric_name         = "CPUUtilization"
@@ -505,8 +512,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
-  count               = var.autoscaling_cpu != null ? 1 : 0
-  alarm_name          = module.cpu_utilization_low_alarm_label.id
+  count               = local.autoscaling_enabled ? 1 : 0
+  alarm_name          = local.autoscaling_enabled ? module.cpu_utilization_low_alarm_label.id : null
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = var.autoscaling_cpu.utilization_low_evaluation_periods
   metric_name         = "CPUUtilization"
@@ -533,8 +540,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
-  count               = var.autoscaling_memory != null ? 1 : 0
-  alarm_name          = module.memory_utilization_high_alarm_label.id
+  count               = local.autoscaling_enabled ? 1 : 0
+  alarm_name          = local.autoscaling_enabled ? module.memory_utilization_high_alarm_label.id : null
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.autoscaling_memory.utilization_high_evaluation_periods
   metric_name         = "MemoryUtilization"
@@ -561,8 +568,8 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "memory_utilization_low" {
-  count               = var.autoscaling_memory != null ? 1 : 0
-  alarm_name          = module.memory_utilization_low_alarm_label.id
+  count               = local.autoscaling_enabled ? 1 : 0
+  alarm_name          = local.autoscaling_enabled ? module.memory_utilization_low_alarm_label.id : null
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = var.autoscaling_memory.utilization_low_evaluation_periods
   metric_name         = "MemoryUtilization"
