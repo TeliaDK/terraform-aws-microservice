@@ -103,7 +103,11 @@ resource "aws_appmesh_virtual_node" "current" {
         http {
           idle {
             unit  = "s"
-            value = var.appmesh_virtual_node_http_timeout
+            value = var.appmesh_virtual_node_http_idle_timeout
+          }
+          per_request {
+            unit  = "s"
+            value = var.appmesh_virtual_node_http_request_timeout
           }
         }
       }
@@ -138,7 +142,11 @@ resource "aws_appmesh_route" "current" {
       timeout {
         idle {
           unit  = "s"
-          value = var.appmesh_virtual_route_http_timeout
+          value = var.appmesh_virtual_route_http_idle_timeout
+        }
+        per_request {
+          unit  = "s"
+          value = var.appmesh_virtual_route_http_request_timeout
         }
       }
 

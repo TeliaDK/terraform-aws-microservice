@@ -243,14 +243,26 @@ variable "autoscaling_memory" {
   description = "Used to define autoscaling based on Memory usage"
 }
 
-variable "appmesh_virtual_node_http_timeout" {
+variable "appmesh_virtual_node_http_idle_timeout" {
   type        = number
-  description = "The timeout for HTTP requests to the node in seconds"
+  description = "The idle timeout for HTTP requests to the node in seconds"
   default     = 15
 }
 
-variable "appmesh_virtual_route_http_timeout" {
+variable "appmesh_virtual_route_http_idle_timeout" {
   type        = number
-  description = "The timeout for HTTP requests to the route in seconds"
+  description = "The idle timeout for HTTP requests to the route in seconds"
+  default     = 15
+}
+
+variable "appmesh_virtual_node_http_request_timeout" {
+  type        = number
+  description = "The request timeout for HTTP requests to the node in seconds"
+  default     = 15
+}
+
+variable "appmesh_virtual_route_http_request_timeout" {
+  type        = number
+  description = "The request timeout for HTTP requests to the route in seconds"
   default     = 15
 }
