@@ -1,3 +1,17 @@
+variable first_run {
+  type    = bool
+  description = <<EOT
+                  If the microservices is being created, this should be set to true, otherwise false.
+                  When applying subsequent times (updating the infra, rather than creating from scratch), this should be
+                  set to false, which will cause the image version being deployed to be the same version as is currently
+                  deployed. Without it the latest image will be deployed, which is almost never wanted behaviour as new
+                  versions should be deployed via CI/CD not terraform.
+                  A value of true should not be committed to source control, but only updated locally when applying for
+                  the first time for the given service.
+                EOT
+  default = false
+}
+
 variable "region" {
   type        = string
   default     = "eu-west-1"
