@@ -258,10 +258,24 @@ module "container_definition_envoy" {
   }
 }
 
+## Used to fetch the currently active version of the image. This is done in order to avoid deploying the latest version, which would otherwise be the default behaviour.
+data "aws_ecs_task_definition" "current" {
+  count = var.first_run ? 0 : 1
+
+  task_definition = var.app_name
+}
+
+data "aws_ecs_container_definition" "current" {
+  count = var.first_run ? 0 : 1
+
+  task_definition = data.aws_ecs_task_definition.current[0].family
+  container_name = var.microservice_container.name
+}
+
 module "container_definition_service" {
   source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.46.0"
   container_name               = var.microservice_container.name
-  container_image              = var.microservice_container.image
+  container_image              = var.first_run ? var.microservice_container.image : data.aws_ecs_container_definition.current[0].image
   container_cpu                = var.microservice_container.cpu
   container_memory_reservation = var.microservice_container.memory
   container_memory             = var.microservice_container.memory
