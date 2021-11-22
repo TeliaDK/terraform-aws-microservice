@@ -166,7 +166,7 @@ resource "aws_appmesh_route" "current" {
 module "container_definition_xray" {
   source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=0.46.0"
   container_name               = "xray-daemon"
-  container_image              = "amazon/aws-xray-daemon"
+  container_image              = "public.ecr.aws/xray/aws-xray-daemon:latest"
   container_cpu                = var.xray_cpu
   container_memory_reservation = var.xray_memory
   container_memory             = var.xray_memory
