@@ -225,7 +225,7 @@ module "container_definition_envoy" {
     }
   ]
 
-  environment = [
+  environment = concat(var.envoy_additional_configuration, [
     {
       name  = "APPMESH_VIRTUAL_NODE_NAME",
       value = "mesh/${var.appmesh_name}/virtualNode/${aws_appmesh_virtual_node.current.name}"
@@ -234,7 +234,7 @@ module "container_definition_envoy" {
       name  = "ENABLE_ENVOY_XRAY_TRACING",
       value = "1"
     }
-  ]
+  ])
 
   healthcheck = {
     command = [
@@ -269,7 +269,7 @@ data "aws_ecs_container_definition" "current" {
   count = var.first_run ? 0 : 1
 
   task_definition = data.aws_ecs_task_definition.current[0].family
-  container_name = var.microservice_container.name
+  container_name  = var.microservice_container.name
 }
 
 module "container_definition_service" {
