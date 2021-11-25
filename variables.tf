@@ -1,5 +1,5 @@
-variable first_run {
-  type    = bool
+variable "first_run" {
+  type        = bool
   description = <<EOT
                   If the microservices is being created, this should be set to true, otherwise false.
                   When applying subsequent times (updating the infra, rather than creating from scratch), this should be
@@ -9,7 +9,7 @@ variable first_run {
                   A value of true should not be committed to source control, but only updated locally when applying for
                   the first time for the given service.
                 EOT
-  default = false
+  default     = false
 }
 
 variable "region" {
@@ -279,4 +279,13 @@ variable "appmesh_virtual_route_http_request_timeout" {
   type        = number
   description = "The request timeout for HTTP requests to the route in seconds"
   default     = 15
+}
+
+variable "envoy_additional_configuration" {
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  description = "Map of envoy additional environment variables. (https://docs.aws.amazon.com/app-mesh/latest/userguide/envoy-config.html)"
+  default     = null
 }
