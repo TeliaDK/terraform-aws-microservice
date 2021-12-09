@@ -257,6 +257,12 @@ variable "autoscaling_memory" {
   description = "Used to define autoscaling based on Memory usage"
 }
 
+variable "instance_count" {
+  type        = number
+  description = "The number of instances to run in the ECS service"
+  default     = 1
+}
+
 variable "appmesh_virtual_node_http_idle_timeout" {
   type        = number
   description = "The idle timeout for HTTP requests to the node in seconds"
