@@ -343,7 +343,7 @@ resource "aws_ecs_task_definition" "current" {
 resource "aws_ecs_service" "current" {
   name            = var.app_name
   cluster         = data.aws_ecs_cluster.current.arn
-  desired_count   = 1
+  desired_count   = var.instance_count
   task_definition = aws_ecs_task_definition.current.arn
   propagate_tags  = "SERVICE"
 
