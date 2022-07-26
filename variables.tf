@@ -155,7 +155,7 @@ variable "secrets" {
     name      = string
     valueFrom = string
   }))
-  description = "Secrets for the service. Use arn of paramaters in parameter store for the valueFrom property"
+  description = "Secrets for the service. Use arn of parameters in parameter store for the valueFrom property"
   default     = null
 }
 
@@ -293,5 +293,5 @@ variable "envoy_additional_configuration" {
     value = string
   }))
   description = "Map of envoy additional environment variables. (https://docs.aws.amazon.com/app-mesh/latest/userguide/envoy-config.html)"
-  default     = null
+  default     = []
 }
