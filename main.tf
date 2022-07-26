@@ -461,7 +461,7 @@ resource "aws_appautoscaling_target" "default" {
 
 resource "aws_appautoscaling_policy" "up" {
   count              = local.autoscaling_enabled ? 1 : 0
-  name               = var.autoscaling != null ? module.scale_up_label.id : null
+  name               = var.autoscaling != null ? module.scale_up_label[0].id : null
   service_namespace  = "ecs"
   resource_id        = aws_ecs_service.current.id
   scalable_dimension = "ecs:service:DesiredCount"
@@ -480,7 +480,7 @@ resource "aws_appautoscaling_policy" "up" {
 
 resource "aws_appautoscaling_policy" "down" {
   count              = local.autoscaling_enabled ? 1 : 0
-  name               = local.autoscaling_enabled ? module.scale_down_label.id : null
+  name               = local.autoscaling_enabled ? module.scale_down_label[0].id : null
   service_namespace  = "ecs"
   resource_id        = aws_ecs_service.current.id
   scalable_dimension = "ecs:service:DesiredCount"
@@ -499,7 +499,7 @@ resource "aws_appautoscaling_policy" "down" {
 
 resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
   count               = local.autoscaling_enabled ? 1 : 0
-  alarm_name          = local.autoscaling_enabled ? module.cpu_utilization_high_alarm_label.id : null
+  alarm_name          = local.autoscaling_enabled ? module.cpu_utilization_high_alarm_label[0].id : null
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.autoscaling_cpu.utilization_high_evaluation_periods
   metric_name         = "CPUUtilization"
@@ -527,7 +527,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
 
 resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
   count               = local.autoscaling_enabled ? 1 : 0
-  alarm_name          = local.autoscaling_enabled ? module.cpu_utilization_low_alarm_label.id : null
+  alarm_name          = local.autoscaling_enabled ? module.cpu_utilization_low_alarm_label[0].id : null
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = var.autoscaling_cpu.utilization_low_evaluation_periods
   metric_name         = "CPUUtilization"
@@ -555,7 +555,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
 
 resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
   count               = local.autoscaling_enabled ? 1 : 0
-  alarm_name          = local.autoscaling_enabled ? module.memory_utilization_high_alarm_label.id : null
+  alarm_name          = local.autoscaling_enabled ? module.memory_utilization_high_alarm_label[0].id : null
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.autoscaling_memory.utilization_high_evaluation_periods
   metric_name         = "MemoryUtilization"
@@ -583,7 +583,7 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
 
 resource "aws_cloudwatch_metric_alarm" "memory_utilization_low" {
   count               = local.autoscaling_enabled ? 1 : 0
-  alarm_name          = local.autoscaling_enabled ? module.memory_utilization_low_alarm_label.id : null
+  alarm_name          = local.autoscaling_enabled ? module.memory_utilization_low_alarm_label[0].id : null
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = var.autoscaling_memory.utilization_low_evaluation_periods
   metric_name         = "MemoryUtilization"
