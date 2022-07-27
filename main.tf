@@ -16,8 +16,9 @@ locals {
     MemoryUtilizationHighThreshold = min(max(local.memory_utilization_high_threshold, 0), 100)
     MemoryUtilizationLowThreshold  = min(max(local.memory_utilization_low_threshold, 0), 100)
   }
-}
 
+  scalable_target_resource_id     = "service/${var.ecs_cluster_name}/${var.app_name}"
+}
 
 resource "aws_cloudwatch_log_group" "current" {
   name              = "/ecs/${var.app_name}"
@@ -346,9 +347,7 @@ resource "aws_ecs_service" "current" {
   desired_count   = var.instance_count
   task_definition = aws_ecs_task_definition.current.arn
   propagate_tags  = "SERVICE"
-
-  launch_type = "FARGATE"
-
+  launch_type     = "FARGATE"
 
   network_configuration {
     security_groups = [aws_security_group.current.id]
@@ -371,7 +370,7 @@ resource "aws_ecs_service" "current" {
     for_each = var.load_balancers == null ? [] : var.load_balancers
 
     content {
-      target_group_arn = load_balancer.value.target_group_arn
+      target_group_arn = load_balancer.value["target_group_arn"]
       container_name   = var.microservice_container.name
       container_port   = var.port
     }
@@ -453,7 +452,7 @@ module "memory_utilization_low_alarm_label" {
 resource "aws_appautoscaling_target" "default" {
   count              = local.autoscaling_enabled ? 1 : 0
   service_namespace  = "ecs"
-  resource_id        = aws_ecs_service.current.id
+  resource_id        = local.scalable_target_resource_id
   scalable_dimension = "ecs:service:DesiredCount"
   min_capacity       = var.autoscaling.min_capacity
   max_capacity       = var.autoscaling.max_capacity
@@ -463,7 +462,7 @@ resource "aws_appautoscaling_policy" "up" {
   count              = local.autoscaling_enabled ? 1 : 0
   name               = var.autoscaling != null ? module.scale_up_label[0].id : null
   service_namespace  = "ecs"
-  resource_id        = aws_ecs_service.current.id
+  resource_id        = local.scalable_target_resource_id
   scalable_dimension = "ecs:service:DesiredCount"
 
   step_scaling_policy_configuration {
@@ -482,7 +481,7 @@ resource "aws_appautoscaling_policy" "down" {
   count              = local.autoscaling_enabled ? 1 : 0
   name               = local.autoscaling_enabled ? module.scale_down_label[0].id : null
   service_namespace  = "ecs"
-  resource_id        = aws_ecs_service.current.id
+  resource_id        = local.scalable_target_resource_id
   scalable_dimension = "ecs:service:DesiredCount"
 
   step_scaling_policy_configuration {
