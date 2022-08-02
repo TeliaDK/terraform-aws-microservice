@@ -18,9 +18,6 @@ locals {
   }
 
   scalable_target_resource_id = "service/${var.ecs_cluster_name}/${var.app_name}"
-
-  default_up_actions   = var.autoscaling != null ? [aws_appautoscaling_policy.up[0].arn] : []
-  default_down_actions = var.autoscaling != null ? [aws_appautoscaling_policy.down[0].arn] : []
 }
 
 resource "aws_cloudwatch_log_group" "current" {
@@ -494,7 +491,7 @@ resource "aws_appautoscaling_policy" "down" {
 
     step_adjustment {
       metric_interval_upper_bound = 0
-      scaling_adjustment          = var.autoscaling.scale_down_adjustment
+      scaling_adjustment          = - var.autoscaling.scale_down_adjustment
     }
   }
 }
@@ -569,7 +566,7 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
   alarm_description = format(
     var.autoscaling_alarm_description,
     "Memory",
-    "Hight",
+    "High",
     var.autoscaling_memory.utilization_high_period / 60,
     var.autoscaling_memory.utilization_high_evaluation_periods
   )

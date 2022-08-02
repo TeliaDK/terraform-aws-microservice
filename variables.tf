@@ -210,7 +210,6 @@ variable "autoscaling" {
   description = "Used to define and enable autoscaling for the ECS service"
 }
 
-
 variable "autoscaling_alarm_description" {
   type        = string
   description = "The string to format and use as the alarm description"
