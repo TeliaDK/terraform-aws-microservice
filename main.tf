@@ -18,6 +18,9 @@ locals {
   }
 
   scalable_target_resource_id = "service/${var.ecs_cluster_name}/${var.app_name}"
+
+  default_up_actions   = var.autoscaling != null ? [aws_appautoscaling_policy.up[0].arn] : []
+  default_down_actions = var.autoscaling != null ? [aws_appautoscaling_policy.down[0].arn] : []
 }
 
 resource "aws_cloudwatch_log_group" "current" {
@@ -515,10 +518,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
     var.autoscaling_cpu.utilization_high_evaluation_periods
   )
 
-  alarm_actions = concat(
-    local.autoscaling_enabled ? [aws_appautoscaling_policy.up[0].arn] : [],
-    compact(var.autoscaling_cpu.utilization_high_alarm_actions))
-  ok_actions = compact(var.autoscaling_cpu.utilization_high_ok_actions)
+  alarm_actions = compact(var.autoscaling_cpu.utilization_high_alarm_actions)
+  ok_actions    = compact(var.autoscaling_cpu.utilization_high_ok_actions)
 
   dimensions = {
     "ClusterName" = aws_ecs_service.current.cluster
@@ -545,10 +546,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
     var.autoscaling_cpu.utilization_low_evaluation_periods
   )
 
-  alarm_actions = concat(
-    local.autoscaling_enabled ? [aws_appautoscaling_policy.down[0].arn] : [],
-    compact(var.autoscaling_cpu.utilization_low_alarm_actions))
-  ok_actions = compact(var.autoscaling_cpu.utilization_low_ok_actions)
+  alarm_actions = compact(var.autoscaling_cpu.utilization_low_alarm_actions)
+  ok_actions    = compact(var.autoscaling_cpu.utilization_low_ok_actions)
 
   dimensions = {
     "ClusterName" = aws_ecs_service.current.cluster
@@ -575,10 +574,8 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
     var.autoscaling_memory.utilization_high_evaluation_periods
   )
 
-  alarm_actions = concat(
-    local.autoscaling_enabled ? [aws_appautoscaling_policy.up[0].arn] : [],
-    compact(var.autoscaling_memory.utilization_high_alarm_actions))
-  ok_actions = compact(var.autoscaling_memory.utilization_high_ok_actions)
+  alarm_actions = compact(var.autoscaling_memory.utilization_high_alarm_actions)
+  ok_actions    = compact(var.autoscaling_memory.utilization_high_ok_actions)
 
   dimensions = {
     "ClusterName" = aws_ecs_service.current.cluster
@@ -605,10 +602,8 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_low" {
     var.autoscaling_memory.utilization_low_evaluation_periods
   )
 
-  alarm_actions = concat(
-    local.autoscaling_enabled ? [aws_appautoscaling_policy.down[0].arn] : [],
-    compact(var.autoscaling_memory.utilization_low_alarm_actions))
-  ok_actions = compact(var.autoscaling_memory.utilization_low_ok_actions)
+  alarm_actions = compact(var.autoscaling_memory.utilization_low_alarm_actions)
+  ok_actions    = compact(var.autoscaling_memory.utilization_low_ok_actions)
 
   dimensions = {
     "ClusterName" = aws_ecs_service.current.cluster
