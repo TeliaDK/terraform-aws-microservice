@@ -17,7 +17,7 @@ locals {
     MemoryUtilizationLowThreshold  = min(max(local.memory_utilization_low_threshold, 0), 100)
   }
 
-  scalable_target_resource_id     = "service/${var.ecs_cluster_name}/${var.app_name}"
+  scalable_target_resource_id = "service/${var.ecs_cluster_name}/${var.app_name}"
 }
 
 resource "aws_cloudwatch_log_group" "current" {
@@ -182,7 +182,7 @@ module "container_definition_xray" {
 
   log_configuration = {
     logDriver = "awslogs"
-    options = {
+    options   = {
       awslogs-group         = "/ecs/${var.app_name}"
       awslogs-region        = data.aws_region.current.name
       awslogs-stream-prefix = "ecs"
@@ -250,7 +250,7 @@ module "container_definition_envoy" {
 
   log_configuration = {
     logDriver = "awslogs"
-    options = {
+    options   = {
       awslogs-group         = "/ecs/${var.app_name}"
       awslogs-region        = data.aws_region.current.name
       awslogs-stream-prefix = "ecs"
@@ -293,7 +293,7 @@ module "container_definition_service" {
 
   log_configuration = {
     logDriver = "awslogs"
-    options = {
+    options   = {
       awslogs-group           = "/ecs/${var.app_name}"
       awslogs-region          = data.aws_region.current.name
       awslogs-stream-prefix   = "ecs"
@@ -329,7 +329,7 @@ resource "aws_ecs_task_definition" "current" {
   proxy_configuration {
     type           = "APPMESH"
     container_name = var.envoy_container_name
-    properties = {
+    properties     = {
       AppPorts         = var.port
       EgressIgnoredIPs = "169.254.170.2,169.254.169.254" # Used for AWS metadata 
       IgnoredUID       = var.envoy_ignored_uid
@@ -491,7 +491,7 @@ resource "aws_appautoscaling_policy" "down" {
 
     step_adjustment {
       metric_interval_upper_bound = 0
-      scaling_adjustment          = var.autoscaling.scale_down_adjustment
+      scaling_adjustment          = - var.autoscaling.scale_down_adjustment
     }
   }
 }
@@ -519,7 +519,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
   ok_actions    = compact(var.autoscaling_cpu.utilization_high_ok_actions)
 
   dimensions = {
-    "ClusterName" = aws_ecs_service.current.cluster
+    "ClusterName" = var.ecs_cluster_name
     "ServiceName" = aws_ecs_service.current.name
   }
 }
@@ -547,7 +547,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
   ok_actions    = compact(var.autoscaling_cpu.utilization_low_ok_actions)
 
   dimensions = {
-    "ClusterName" = aws_ecs_service.current.cluster
+    "ClusterName" = var.ecs_cluster_name
     "ServiceName" = aws_ecs_service.current.name
   }
 }
@@ -566,7 +566,7 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
   alarm_description = format(
     var.autoscaling_alarm_description,
     "Memory",
-    "Hight",
+    "High",
     var.autoscaling_memory.utilization_high_period / 60,
     var.autoscaling_memory.utilization_high_evaluation_periods
   )
@@ -575,7 +575,7 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
   ok_actions    = compact(var.autoscaling_memory.utilization_high_ok_actions)
 
   dimensions = {
-    "ClusterName" = aws_ecs_service.current.cluster
+    "ClusterName" = var.ecs_cluster_name
     "ServiceName" = aws_ecs_service.current.name
   }
 }
@@ -603,7 +603,8 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_low" {
   ok_actions    = compact(var.autoscaling_memory.utilization_low_ok_actions)
 
   dimensions = {
-    "ClusterName" = aws_ecs_service.current.cluster
+    "ClusterName" = var.ecs_cluster_name
     "ServiceName" = aws_ecs_service.current.name
   }
 }
+

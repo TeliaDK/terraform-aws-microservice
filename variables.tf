@@ -30,7 +30,7 @@ variable "microservice_container" {
 
 variable "port" {
   type        = number
-  description = "The port that will be uesd for port mapping <HOST>:<CONTAINER>"
+  description = "The port that will be used for port mapping <HOST>:<CONTAINER>"
   default     = 8080
 }
 
@@ -209,7 +209,6 @@ variable "autoscaling" {
   default     = null
   description = "Used to define and enable autoscaling for the ECS service"
 }
-
 
 variable "autoscaling_alarm_description" {
   type        = string
