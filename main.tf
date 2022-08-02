@@ -519,7 +519,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
   ok_actions    = compact(var.autoscaling_cpu.utilization_high_ok_actions)
 
   dimensions = {
-    "ClusterName" = aws_ecs_service.current.cluster
+    "ClusterName" = var.ecs_cluster_name
     "ServiceName" = aws_ecs_service.current.name
   }
 }
@@ -547,7 +547,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
   ok_actions    = compact(var.autoscaling_cpu.utilization_low_ok_actions)
 
   dimensions = {
-    "ClusterName" = aws_ecs_service.current.cluster
+    "ClusterName" = var.ecs_cluster_name
     "ServiceName" = aws_ecs_service.current.name
   }
 }
@@ -575,7 +575,7 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
   ok_actions    = compact(var.autoscaling_memory.utilization_high_ok_actions)
 
   dimensions = {
-    "ClusterName" = aws_ecs_service.current.cluster
+    "ClusterName" = var.ecs_cluster_name
     "ServiceName" = aws_ecs_service.current.name
   }
 }
@@ -603,7 +603,7 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_low" {
   ok_actions    = compact(var.autoscaling_memory.utilization_low_ok_actions)
 
   dimensions = {
-    "ClusterName" = aws_ecs_service.current.cluster
+    "ClusterName" = var.ecs_cluster_name
     "ServiceName" = aws_ecs_service.current.name
   }
 }
