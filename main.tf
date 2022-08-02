@@ -17,7 +17,7 @@ locals {
     MemoryUtilizationLowThreshold  = min(max(local.memory_utilization_low_threshold, 0), 100)
   }
 
-  scalable_target_resource_id     = "service/${var.ecs_cluster_name}/${var.app_name}"
+  scalable_target_resource_id = "service/${var.ecs_cluster_name}/${var.app_name}"
 }
 
 resource "aws_cloudwatch_log_group" "current" {
@@ -182,7 +182,7 @@ module "container_definition_xray" {
 
   log_configuration = {
     logDriver = "awslogs"
-    options = {
+    options   = {
       awslogs-group         = "/ecs/${var.app_name}"
       awslogs-region        = data.aws_region.current.name
       awslogs-stream-prefix = "ecs"
@@ -250,7 +250,7 @@ module "container_definition_envoy" {
 
   log_configuration = {
     logDriver = "awslogs"
-    options = {
+    options   = {
       awslogs-group         = "/ecs/${var.app_name}"
       awslogs-region        = data.aws_region.current.name
       awslogs-stream-prefix = "ecs"
@@ -293,7 +293,7 @@ module "container_definition_service" {
 
   log_configuration = {
     logDriver = "awslogs"
-    options = {
+    options   = {
       awslogs-group           = "/ecs/${var.app_name}"
       awslogs-region          = data.aws_region.current.name
       awslogs-stream-prefix   = "ecs"
@@ -329,7 +329,7 @@ resource "aws_ecs_task_definition" "current" {
   proxy_configuration {
     type           = "APPMESH"
     container_name = var.envoy_container_name
-    properties = {
+    properties     = {
       AppPorts         = var.port
       EgressIgnoredIPs = "169.254.170.2,169.254.169.254" # Used for AWS metadata 
       IgnoredUID       = var.envoy_ignored_uid
@@ -515,8 +515,10 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
     var.autoscaling_cpu.utilization_high_evaluation_periods
   )
 
-  alarm_actions = compact(var.autoscaling_cpu.utilization_high_alarm_actions)
-  ok_actions    = compact(var.autoscaling_cpu.utilization_high_ok_actions)
+  alarm_actions = concat(
+    local.autoscaling_enabled ? [aws_appautoscaling_policy.up[0].arn] : [],
+    compact(var.autoscaling_cpu.utilization_high_alarm_actions))
+  ok_actions = compact(var.autoscaling_cpu.utilization_high_ok_actions)
 
   dimensions = {
     "ClusterName" = aws_ecs_service.current.cluster
@@ -543,8 +545,10 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
     var.autoscaling_cpu.utilization_low_evaluation_periods
   )
 
-  alarm_actions = compact(var.autoscaling_cpu.utilization_low_alarm_actions)
-  ok_actions    = compact(var.autoscaling_cpu.utilization_low_ok_actions)
+  alarm_actions = concat(
+    local.autoscaling_enabled ? [aws_appautoscaling_policy.down[0].arn] : [],
+    compact(var.autoscaling_cpu.utilization_low_alarm_actions))
+  ok_actions = compact(var.autoscaling_cpu.utilization_low_ok_actions)
 
   dimensions = {
     "ClusterName" = aws_ecs_service.current.cluster
@@ -571,8 +575,10 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_high" {
     var.autoscaling_memory.utilization_high_evaluation_periods
   )
 
-  alarm_actions = compact(var.autoscaling_memory.utilization_high_alarm_actions)
-  ok_actions    = compact(var.autoscaling_memory.utilization_high_ok_actions)
+  alarm_actions = concat(
+    local.autoscaling_enabled ? [aws_appautoscaling_policy.up[0].arn] : [],
+    compact(var.autoscaling_memory.utilization_high_alarm_actions))
+  ok_actions = compact(var.autoscaling_memory.utilization_high_ok_actions)
 
   dimensions = {
     "ClusterName" = aws_ecs_service.current.cluster
@@ -599,11 +605,14 @@ resource "aws_cloudwatch_metric_alarm" "memory_utilization_low" {
     var.autoscaling_memory.utilization_low_evaluation_periods
   )
 
-  alarm_actions = compact(var.autoscaling_memory.utilization_low_alarm_actions)
-  ok_actions    = compact(var.autoscaling_memory.utilization_low_ok_actions)
+  alarm_actions = concat(
+    local.autoscaling_enabled ? [aws_appautoscaling_policy.down[0].arn] : [],
+    compact(var.autoscaling_memory.utilization_low_alarm_actions))
+  ok_actions = compact(var.autoscaling_memory.utilization_low_ok_actions)
 
   dimensions = {
     "ClusterName" = aws_ecs_service.current.cluster
     "ServiceName" = aws_ecs_service.current.name
   }
 }
+

@@ -30,7 +30,7 @@ variable "microservice_container" {
 
 variable "port" {
   type        = number
-  description = "The port that will be uesd for port mapping <HOST>:<CONTAINER>"
+  description = "The port that will be used for port mapping <HOST>:<CONTAINER>"
   default     = 8080
 }
 
