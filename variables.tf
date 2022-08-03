@@ -201,10 +201,6 @@ variable "autoscaling" {
     attributes            = list(string)
     min_capacity          = number
     max_capacity          = number
-    scale_down_adjustment = number
-    scale_down_cooldown   = number
-    scale_up_adjustment   = number
-    scale_up_cooldown     = number
   })
   default     = null
   description = "Used to define and enable autoscaling for the ECS service"
@@ -224,16 +220,9 @@ variable "autoscaling_delimiter" {
 
 variable "autoscaling_cpu" {
   type = object({
-    utilization_high_threshold          = number
-    utilization_high_evaluation_periods = number
-    utilization_high_period             = number
-    utilization_high_alarm_actions      = list(string)
-    utilization_high_ok_actions         = list(string)
-    utilization_low_threshold           = number
-    utilization_low_evaluation_periods  = number
-    utilization_low_period              = number
-    utilization_low_alarm_actions       = list(string)
-    utilization_low_ok_actions          = list(string)
+    utilization_target_value = number
+    scale_in_period = number
+    scale_out_period = number
   })
   default     = null
   description = "Used to define autoscaling based on CPU usage"
@@ -241,16 +230,9 @@ variable "autoscaling_cpu" {
 
 variable "autoscaling_memory" {
   type = object({
-    utilization_high_threshold          = number
-    utilization_high_evaluation_periods = number
-    utilization_high_period             = number
-    utilization_high_alarm_actions      = list(string)
-    utilization_high_ok_actions         = list(string)
-    utilization_low_threshold           = number
-    utilization_low_evaluation_periods  = number
-    utilization_low_period              = number
-    utilization_low_alarm_actions       = list(string)
-    utilization_low_ok_actions          = list(string)
+    utilization_target_value = number
+    scale_in_period = number
+    scale_out_period = number
   })
   default     = null
   description = "Used to define autoscaling based on Memory usage"
