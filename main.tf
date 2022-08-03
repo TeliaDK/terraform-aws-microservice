@@ -379,28 +379,49 @@ resource "aws_ecs_service" "current" {
   tags = var.tags
 }
 
-module "scale_up_label" {
+module "scale_up_label_cpu" {
   count      = local.autoscaling_enabled ? 1 : 0
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
   namespace  = var.autoscaling.namespace
   stage      = var.autoscaling.stage
-  attributes = compact(concat(var.autoscaling.attributes, ["up"]))
+  attributes = compact(concat(var.autoscaling.attributes, ["up", "cpu"]))
   tags       = var.tags
 }
 
-module "scale_down_label" {
+module "scale_down_label_cpu" {
   count      = local.autoscaling_enabled ? 1 : 0
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
   namespace  = var.autoscaling.namespace
   stage      = var.autoscaling.stage
-  attributes = compact(concat(var.autoscaling.attributes, ["down"]))
+  attributes = compact(concat(var.autoscaling.attributes, ["down", "cpu"]))
   tags       = var.tags
 }
 
+module "scale_up_label_memory" {
+  count      = local.autoscaling_enabled ? 1 : 0
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
+  enabled    = var.autoscaling.enabled
+  name       = var.autoscaling.name
+  namespace  = var.autoscaling.namespace
+  stage      = var.autoscaling.stage
+  attributes = compact(concat(var.autoscaling.attributes, ["up", "memory"]))
+  tags       = var.tags
+}
+
+module "scale_down_label_memory" {
+  count      = local.autoscaling_enabled ? 1 : 0
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
+  enabled    = var.autoscaling.enabled
+  name       = var.autoscaling.name
+  namespace  = var.autoscaling.namespace
+  stage      = var.autoscaling.stage
+  attributes = compact(concat(var.autoscaling.attributes, ["down", "memory"]))
+  tags       = var.tags
+}
 
 module "cpu_utilization_high_alarm_label" {
   count      = local.autoscaling_enabled ? 1 : 0
@@ -458,9 +479,9 @@ resource "aws_appautoscaling_target" "default" {
   max_capacity       = var.autoscaling.max_capacity
 }
 
-resource "aws_appautoscaling_policy" "up" {
+resource "aws_appautoscaling_policy" "cpuUp" {
   count              = local.autoscaling_enabled ? 1 : 0
-  name               = var.autoscaling != null ? module.scale_up_label[0].id : null
+  name               = var.autoscaling != null ? module.scale_up_label_cpu[0].id : null
   service_namespace  = "ecs"
   resource_id        = local.scalable_target_resource_id
   scalable_dimension = "ecs:service:DesiredCount"
@@ -477,9 +498,47 @@ resource "aws_appautoscaling_policy" "up" {
   }
 }
 
-resource "aws_appautoscaling_policy" "down" {
+resource "aws_appautoscaling_policy" "cpuDown" {
   count              = local.autoscaling_enabled ? 1 : 0
-  name               = local.autoscaling_enabled ? module.scale_down_label[0].id : null
+  name               = local.autoscaling_enabled ? module.scale_down_label_cpu[0].id : null
+  service_namespace  = "ecs"
+  resource_id        = local.scalable_target_resource_id
+  scalable_dimension = "ecs:service:DesiredCount"
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = var.autoscaling.scale_down_cooldown
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_upper_bound = 0
+      scaling_adjustment          = - var.autoscaling.scale_down_adjustment
+    }
+  }
+}
+
+resource "aws_appautoscaling_policy" "memoryUp" {
+  count              = local.autoscaling_enabled ? 1 : 0
+  name               = var.autoscaling != null ? module.scale_up_label_memory[0].id : null
+  service_namespace  = "ecs"
+  resource_id        = local.scalable_target_resource_id
+  scalable_dimension = "ecs:service:DesiredCount"
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = var.autoscaling.scale_up_cooldown
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = var.autoscaling.scale_up_adjustment
+    }
+  }
+}
+
+resource "aws_appautoscaling_policy" "memoryDown" {
+  count              = local.autoscaling_enabled ? 1 : 0
+  name               = local.autoscaling_enabled ? module.scale_down_label_memory[0].id : null
   service_namespace  = "ecs"
   resource_id        = local.scalable_target_resource_id
   scalable_dimension = "ecs:service:DesiredCount"
