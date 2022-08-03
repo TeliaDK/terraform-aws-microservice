@@ -1,10 +1,12 @@
 locals {
   autoscaling_enabled                              = var.autoscaling != null ? var.autoscaling.enabled : false
+  autoscaling_cpu_enabled                          = local.autoscaling_enabled && var.autoscaling_cpu != null
+  autoscaling_memory_enabled                       = local.autoscaling_enabled && var.autoscaling_memory != null
   cloudwatch_retention_in_days                     = 30
   service_discovery_dns_ttl                        = 10
   service_discovery_health_check_failure_threshold = 1
   aws_ecs_task_definition_family                   = var.app_name
-  scalable_target_resource_id = "service/${var.ecs_cluster_name}/${var.app_name}"
+  scalable_target_resource_id                      = "service/${var.ecs_cluster_name}/${var.app_name}"
 }
 
 resource "aws_cloudwatch_log_group" "current" {
@@ -367,7 +369,7 @@ resource "aws_ecs_service" "current" {
 }
 
 module "scale_cpu_label" {
-  count      = local.autoscaling_enabled ? 1 : 0
+  count      = local.autoscaling_cpu_enabled ? 1 : 0
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
@@ -378,7 +380,7 @@ module "scale_cpu_label" {
 }
 
 module "scale_memory_label" {
-  count      = local.autoscaling_enabled ? 1 : 0
+  count      = local.autoscaling_memory_enabled ? 1 : 0
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled    = var.autoscaling.enabled
   name       = var.autoscaling.name
@@ -398,39 +400,39 @@ resource "aws_appautoscaling_target" "target" {
 }
 
 resource "aws_appautoscaling_policy" "cpu" {
-  count              = local.autoscaling_enabled ? 1 : 0
-  name               = local.autoscaling_enabled ? module.scale_cpu_label[0].id : null
+  count              = local.autoscaling_cpu_enabled ? 1 : 0
+  name               = local.autoscaling_cpu_enabled ? module.scale_cpu_label[0].id : null
   policy_type        = "TargetTrackingScaling"
-  service_namespace  = local.autoscaling_enabled ? aws_appautoscaling_target.target[0].service_namespace : null
-  resource_id        = local.autoscaling_enabled ? aws_appautoscaling_target.target[0].resource_id : null
-  scalable_dimension = local.autoscaling_enabled ? aws_appautoscaling_target.target[0].scalable_dimension : null
+  service_namespace  = local.autoscaling_cpu_enabled ? aws_appautoscaling_target.target[0].service_namespace : null
+  resource_id        = local.autoscaling_cpu_enabled ? aws_appautoscaling_target.target[0].resource_id : null
+  scalable_dimension = local.autoscaling_cpu_enabled ? aws_appautoscaling_target.target[0].scalable_dimension : null
 
   target_tracking_scaling_policy_configuration {
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
 
-    scale_in_cooldown = var.autoscaling_cpu.scale_in_period
+    scale_in_cooldown  = var.autoscaling_cpu.scale_in_period
     scale_out_cooldown = var.autoscaling_cpu.scale_out_period
-    target_value = var.autoscaling_cpu.utilization_target_value
+    target_value       = var.autoscaling_cpu.utilization_target_value
   }
 }
 
 resource "aws_appautoscaling_policy" "memory" {
-  count              = local.autoscaling_enabled ? 1 : 0
+  count              = local.autoscaling_memory_enabled ? 1 : 0
   name               = var.autoscaling != null ? module.scale_memory_label[0].id : null
   policy_type        = "TargetTrackingScaling"
-  service_namespace  = local.autoscaling_enabled ? aws_appautoscaling_target.target[0].service_namespace : null
-  resource_id        = local.autoscaling_enabled ? aws_appautoscaling_target.target[0].resource_id : null
-  scalable_dimension = local.autoscaling_enabled ? aws_appautoscaling_target.target[0].scalable_dimension : null
+  service_namespace  = local.autoscaling_memory_enabled ? aws_appautoscaling_target.target[0].service_namespace : null
+  resource_id        = local.autoscaling_memory_enabled ? aws_appautoscaling_target.target[0].resource_id : null
+  scalable_dimension = local.autoscaling_memory_enabled ? aws_appautoscaling_target.target[0].scalable_dimension : null
 
   target_tracking_scaling_policy_configuration {
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageMemoryUtilization"
     }
 
-    scale_in_cooldown = var.autoscaling_memory.scale_in_period
+    scale_in_cooldown  = var.autoscaling_memory.scale_in_period
     scale_out_cooldown = var.autoscaling_memory.scale_out_period
-    target_value = var.autoscaling_memory.utilization_target_value
+    target_value       = var.autoscaling_memory.utilization_target_value
   }
 }

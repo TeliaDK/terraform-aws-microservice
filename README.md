@@ -68,30 +68,19 @@ module "microservice" {
   }
 
   autoscaling = {
-    enabled               = true
-    name                  = "my-service"
-    namespace             = "ecs/autoscaling"
-    stage                 = "dev"
-    attributes            = []
-    min_capacity          = 1
-    max_capacity          = 3
-    scale_down_adjustment = 1
-    scale_down_cooldown   = 1
-    scale_up_adjustment   = 1
-    scale_up_cooldown     = 1
+    enabled      = true
+    name         = "my-service"
+    namespace    = "ecs/autoscaling"
+    stage        = "dev"
+    attributes   = []
+    min_capacity = 1
+    max_capacity = 3
   }
 
   autoscaling_cpu = {
-    utilization_high_threshold          = 50
-    utilization_high_evaluation_periods = 1
-    utilization_high_period             = 300
-    utilization_high_alarm_actions      = []
-    utilization_high_ok_actions         = []
-    utilization_low_threshold           = 20
-    utilization_low_evaluation_periods  = 1
-    utilization_low_period              = 300
-    utilization_low_alarm_actions       = []
-    utilization_low_ok_actions          = []
+    utilization_target_value = 65
+    scale_in_period          = 300
+    scale_out_period         = 300
   }
 
   tags = local.tags

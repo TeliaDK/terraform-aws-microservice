@@ -194,13 +194,13 @@ variable "awslogs_datetime_format" {
 
 variable "autoscaling" {
   type = object({
-    enabled               = bool
-    name                  = string
-    namespace             = string
-    stage                 = string
-    attributes            = list(string)
-    min_capacity          = number
-    max_capacity          = number
+    enabled      = bool
+    name         = string
+    namespace    = string
+    stage        = string
+    attributes   = list(string)
+    min_capacity = number
+    max_capacity = number
   })
   default     = null
   description = "Used to define and enable autoscaling for the ECS service"
@@ -221,8 +221,8 @@ variable "autoscaling_delimiter" {
 variable "autoscaling_cpu" {
   type = object({
     utilization_target_value = number
-    scale_in_period = number
-    scale_out_period = number
+    scale_in_period          = number
+    scale_out_period         = number
   })
   default     = null
   description = "Used to define autoscaling based on CPU usage"
@@ -231,8 +231,8 @@ variable "autoscaling_cpu" {
 variable "autoscaling_memory" {
   type = object({
     utilization_target_value = number
-    scale_in_period = number
-    scale_out_period = number
+    scale_in_period          = number
+    scale_out_period         = number
   })
   default     = null
   description = "Used to define autoscaling based on Memory usage"
