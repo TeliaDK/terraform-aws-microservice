@@ -59,7 +59,7 @@ resource "aws_appmesh_virtual_router" "current" {
 }
 
 resource "aws_appmesh_virtual_service" "current" {
-  name      = "${var.app_name}-virtual-service"
+  name      = coalesce(var.appmesh_virtual_service_name, "${var.app_name}-virtual-service")
   mesh_name = var.appmesh_name
 
   spec {
@@ -80,7 +80,7 @@ resource "aws_appmesh_virtual_node" "current" {
   spec {
     backend {
       virtual_service {
-        virtual_service_name = aws_appmesh_virtual_service.current.name
+        virtual_service_name = coalesce(var.appmesh_virtual_node_backend_service, aws_appmesh_virtual_service.current.name)
       }
     }
 
