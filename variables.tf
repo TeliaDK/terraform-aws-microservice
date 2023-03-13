@@ -244,6 +244,18 @@ variable "instance_count" {
   default     = 1
 }
 
+variable "appmesh_virtual_service_name" {
+  type        = string
+  description = "Name of AppMesh virtual service"
+  default     = null
+}
+
+variable "appmesh_virtual_node_backend_service" {
+  type        = string
+  description = "Name of virtual service for AppMesh virtual node backend"
+  default     = null
+}
+
 variable "appmesh_virtual_node_http_idle_timeout" {
   type        = number
   description = "The idle timeout for HTTP requests to the node in seconds"
